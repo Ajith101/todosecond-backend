@@ -3,13 +3,15 @@ const TodosModel = require("../models/todoModels");
 
 const createATodo = async (req, res) => {
   const todos = req.body;
+
   const newTodo = new TodosModel({
     ...todos,
     added_on: new Date().toISOString(),
   });
   try {
     await newTodo.save();
-    res.status(201).json(newTodo);
+    const total = await TodosModel.find().countDocuments({});
+    res.status(201).json({ todo: newTodo, totalTodos: total });
   } catch (err) {
     res.status(404).json({ message: "Something went wrong" });
 
@@ -30,6 +32,7 @@ const getAllTodos = async (req, res) => {
       currentPage: Number(page),
       totalTodos: total,
       numberOfPages: Math.ceil(total / limit),
+      limit: limit,
     });
   } catch (err) {
     res.status(404).json({ message: "Something Went Wrong" });
@@ -43,7 +46,8 @@ const deleteTodo = async (req, res) => {
       console.log(`Todo with ${id} not found`);
     }
     await TodosModel.findByIdAndDelete(id);
-    res.status(201).json({ message: "Delete succesfully " });
+    const total = await TodosModel.find().countDocuments({});
+    res.status(201).json({ message: "Delete succesfully ", totalTodo: total });
   } catch (err) {
     res.status(404).json({ message: "Something went wrong" });
   }
