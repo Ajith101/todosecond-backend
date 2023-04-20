@@ -18,10 +18,19 @@ const createATodo = async (req, res) => {
 };
 
 const getAllTodos = async (req, res) => {
+  const { page } = req.query;
   try {
-    const allTodos = await TodosModel.find();
+    const limit = 6;
+    const startIndex = (Number(page) - 1) * limit;
+    const total = await TodosModel.countDocuments({});
+    const todos = await TodosModel.find().limit(limit).skip(startIndex);
 
-    res.status(200).json(allTodos);
+    res.json({
+      data: todos,
+      currentPage: Number(page),
+      totalTodos: total,
+      numberOfPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     res.status(404).json({ message: "Something Went Wrong" });
   }
